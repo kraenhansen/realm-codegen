@@ -1,0 +1,10 @@
+import bindings from "bindings";
+const addon = bindings("addon");
+
+{{#each interfaces}}
+import type { {{name}} as {{name}}Class } from "./{{name}}";
+{{/each}}
+
+{{#each interfaces}}
+export const {{name}}: typeof {{name}}Class = addon.{{name}};
+{{/each}}

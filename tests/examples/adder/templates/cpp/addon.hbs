@@ -1,0 +1,16 @@
+#include <node_api.h>
+
+// Inspired by https://github.com/nodejs/node-addon-examples/blob/main/6_object_wrap/napi/addon.cc
+
+{{#each interfaces}}
+#include "{{ snakeCase name }}.h"
+{{/each}}
+
+napi_value Init(napi_env env, napi_value exports) {
+  {{#each interfaces}}
+  generated::{{ name }}::Init(env, exports);
+  {{/each}}
+  return exports;
+}
+
+NAPI_MODULE(NODE_GYP_MODULE_NAME, Init)
