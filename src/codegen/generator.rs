@@ -61,11 +61,13 @@ where
   let absolute_path = output_path.join(rendered_filename);
   let result: String = handlebars.render(&config.template, &data)?;
   let formatted_result = apply_formatter(&config.formatter, result)?;
-  println!(
-    "Saving {}:\n{}",
-    absolute_path.to_string_lossy(),
-    formatted_result
-  );
+  println!("Saving {}", absolute_path.to_string_lossy(),);
+  // Create the output directory if it doesn't exist already
+  fs::create_dir_all(
+    &absolute_path
+      .parent()
+      .expect("Failed to determine parent directory"),
+  )?;
   fs::write(absolute_path, formatted_result)?;
   Ok(())
 }

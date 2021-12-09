@@ -29,7 +29,10 @@ fn main() {
             let result = codegen::generator::generate(c, &output_path);
             match result {
                 Ok(_) => println!("All done ..."),
-                Err(e) => println!("Failed to generate binding: {}", e),
+                Err(e) => {
+                    println!("Failed to generate binding: {}", e);
+                    std::process::exit(1);
+                }
             }
         }
         Err(e) => println!("Failed to read config ({}): {}", config_path.display(), e),
