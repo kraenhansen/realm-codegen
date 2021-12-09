@@ -6,6 +6,7 @@
     "generate": "cargo run . src/generated",
     "watch": "cargo watch --workdir . -x 'run . src/generated'",
     "compile": "cmake-js compile",
+    "build": "npm run generate && npm run compile",
     "test": "esrun src/test.ts"
   },
   "devDependencies": {

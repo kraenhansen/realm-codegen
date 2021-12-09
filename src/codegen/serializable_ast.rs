@@ -18,7 +18,7 @@ impl Serialize for SerializableNonPartialInterface<'_> {
       .0
       .members
       .iter()
-      .map(|member| SerializableInterfaceMember(member))
+      .map(SerializableInterfaceMember)
       .collect::<Vec<SerializableInterfaceMember>>();
     s.serialize_field("members", members)?;
     s.end()
@@ -44,6 +44,7 @@ impl Serialize for SerializableOperation<'_> {
   {
     let mut s = serializer.serialize_struct("Operation", 1)?;
     s.serialize_field("operation", &true)?;
+    println!("operation = {:?}", self.0);
     let name = match &self.0 {
       Operation::Regular(a) => a.name.as_ref(),
       Operation::Special(a) => a.name.as_ref(),
@@ -62,7 +63,7 @@ impl Serialize for SerializableOperation<'_> {
     if let Some(a) = arguments {
       let arguments = a
         .iter()
-        .map(|argument| SerializableArgument(argument))
+        .map(SerializableArgument)
         .collect::<Vec<SerializableArgument>>();
       s.serialize_field("arguments", &arguments)?;
     }

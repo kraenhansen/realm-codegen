@@ -25,7 +25,9 @@ napi_value {{ name }}::Init(napi_env env, napi_value exports) {
   napi_status status;
   napi_property_descriptor properties[] = {
     {{#each members}}
-    { "{{ camelCase name }}", 0, {{ name }}, 0, 0, 0, napi_default, 0 }{{#unless @last}},{{/unless}}
+      {{#if operation}}
+        { "{{ camelCase name }}", 0, {{ name }}, 0, 0, 0, napi_default, 0 }{{#unless @last}},{{/unless}}
+      {{/if}}
     {{/each}}
   };
 
@@ -137,40 +139,42 @@ napi_value {{name}}::New(napi_env env, napi_callback_info info) {
 }
 
 {{#each members}}
-  napi_value {{ ../name }}::{{ name }}(napi_env env, napi_callback_info info) {
-    napi_status status;
+  {{#if operation}}
+    napi_value {{ ../name }}::{{ name }}(napi_env env, napi_callback_info info) {
+      napi_status status;
 
-    size_t argc = {{len arguments}};
-    napi_value args[{{len arguments}}];
-    napi_value jsthis;
-    status = napi_get_cb_info(env, info, &argc, args, &jsthis, nullptr);
-    assert(status == napi_ok);
-
-    {{../name}}* obj;
-    status = napi_unwrap(env, jsthis, reinterpret_cast<void**>(&obj));
-    assert(status == napi_ok);
-
-    napi_valuetype valuetype;
-    {{#each arguments}}
-      status = napi_typeof(env, args[{{@index}}], &valuetype);
+      size_t argc = {{len arguments}};
+      napi_value args[{{len arguments}}];
+      napi_value jsthis;
+      status = napi_get_cb_info(env, info, &argc, args, &jsthis, nullptr);
       assert(status == napi_ok);
-      {{#if type.double}}
-      double arg{{@index}} = 1;
-      if (valuetype != napi_undefined) {
-        status = napi_get_value_double(env, args[{{@index}}], &arg{{@index}});
+
+      {{../name}}* obj;
+      status = napi_unwrap(env, jsthis, reinterpret_cast<void**>(&obj));
+      assert(status == napi_ok);
+
+      napi_valuetype valuetype;
+      {{#each arguments}}
+        status = napi_typeof(env, args[{{@index}}], &valuetype);
         assert(status == napi_ok);
-      }
-      {{/if}}
-      
-    {{/each}}
+        {{#if type.double}}
+        double arg{{@index}} = 1;
+        if (valuetype != napi_undefined) {
+          status = napi_get_value_double(env, args[{{@index}}], &arg{{@index}});
+          assert(status == napi_ok);
+        }
+        {{/if}}
+        
+      {{/each}}
 
-    auto result = obj->wrapped.{{ name }}({{#each arguments}}arg{{@index}}{{#unless @last}},{{/unless}}{{/each}});
-    napi_value result_value;
-    status = napi_create_double(env, result, &result_value);
-    assert(status == napi_ok);
+      auto result = obj->wrapped.{{ name }}({{#each arguments}}arg{{@index}}{{#unless @last}},{{/unless}}{{/each}});
+      napi_value result_value;
+      status = napi_create_double(env, result, &result_value);
+      assert(status == napi_ok);
 
-    return result_value;
-  }
+      return result_value;
+    }
+  {{/if}}
 {{/each}}
 
 }

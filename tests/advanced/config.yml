@@ -1,0 +1,5 @@
+fragments:
+  - advanced.webidl
+templates:
+  - ../../templates/napi
+  - ../../templates/ts

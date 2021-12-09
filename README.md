@@ -12,23 +12,23 @@ Note: I've only tested this on a Mac.
 ## Install the example
 
 ```
-npm install --prefix tests/examples/adder
+npm install --prefix tests/adder
 ```
 
 ## Compile the rust generator and generate some code
 
 ```
-npm run generate --prefix tests/examples/adder
+npm run generate --prefix tests/adder
 ```
 
 ## Compile the NAPI addon which consumes the generated code
 
 ```
-npm run compile --prefix tests/examples/adder
+npm run compile --prefix tests/adder
 ```
 
 ## Run the TypeScript test
 
 ```
-npm test --prefix tests/examples/adder
+npm test --prefix tests/adder
 ```

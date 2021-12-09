@@ -29,6 +29,9 @@ fn main() {
                 }
             }
         }
-        Err(e) => println!("Failed to read config ({}): {}", config_path.display(), e),
+        Err(e) => {
+            println!("Failed to read config: {}", e);
+            std::process::exit(1);
+        }
     };
 }

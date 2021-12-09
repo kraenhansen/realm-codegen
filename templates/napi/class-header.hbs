@@ -19,7 +19,9 @@ class {{ name }} {
 
   static napi_value New(napi_env env, napi_callback_info info);
   {{#each members}}
-    static napi_value {{ name }}(napi_env env, napi_callback_info info);
+    {{#if operation}}
+      static napi_value {{ name }}(napi_env env, napi_callback_info info);
+    {{/if}}
   {{/each}}
   static inline napi_value Constructor(napi_env env);
 
