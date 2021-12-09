@@ -13,14 +13,6 @@ use super::config;
 use super::serializable_ast::*;
 use super::template_helpers::*;
 
-fn read_fragment(path: &PathBuf) -> Result<webidl::ast::AST, Box<dyn Error>> {
-  let source = fs::read_to_string(path)?;
-  match webidl::parse_string(&source) {
-    Ok(v) => Ok(v),
-    Err(e) => Err(Box::new(e)),
-  }
-}
-
 fn apply_formatter(formatter: &Option<String>, source: String) -> Result<String, Box<dyn Error>> {
   if let Some(formatter) = &formatter {
     if let Some((command, arguments)) = formatter.split(" ").collect::<Vec<&str>>().split_first() {
@@ -72,23 +64,16 @@ where
   Ok(())
 }
 
-pub fn generate(config: config::ConfigResult, output_path: &PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn generate(
+  config: config::EnrichedConfig,
+  output_path: &PathBuf,
+) -> Result<(), Box<dyn Error>> {
   // Create the output directory if it doesn't exist already
   if !output_path.exists() {
     fs::create_dir_all(&output_path)?;
   }
-  let fragments = config
-    .config
-    .fragment_paths
-    .iter()
-    .map(|path| read_fragment(&path))
-    .collect::<Result<Vec<webidl::ast::AST>, Box<dyn Error>>>()?;
   // Gather all interfaces
-  let definitions = fragments.concat();
-  // Print the definitions
-  let mut visitor = PrettyPrintVisitor::new();
-  visitor.visit(&definitions);
-  print!("{}", visitor.get_output());
+  let definitions = config.fragments.concat();
   // Gather all interfaces
   let interfaces = definitions
     .iter()
@@ -97,40 +82,42 @@ pub fn generate(config: config::ConfigResult, output_path: &PathBuf) -> Result<(
       _ => None,
     })
     .collect::<Vec<&NonPartialInterface>>();
-  for output in &config.config.outputs {
-    // Emit output files
-    let mut handlebars = Handlebars::new();
-    // Register some helpers
-    register_helpers(&mut handlebars);
-    // Register the root path as a template directory
-    // TODO: I wonder if there's a simpler way to do this ...
-    let absolute_template_root = if let Some(template_root) = &output.template_root {
-      config.root_path.join(template_root)
-    } else {
-      config.root_path.clone()
-    };
-    handlebars.register_templates_directory(".hbs", absolute_template_root)?;
-    match &output.per {
-      Some(config::OutputIterator::Interface) => {
-        for interface in &interfaces {
-          write_output(
-            &output,
-            &output_path,
-            &handlebars,
-            &SerializableNonPartialInterface(interface),
-          )?;
+  // Print the definitions
+  let mut visitor = PrettyPrintVisitor::new();
+  visitor.visit(&definitions);
+  print!("{}", visitor.get_output());
+  for template_root in config.template_roots {
+    for output in template_root.outputs {
+      // Emit output files
+      let mut handlebars = Handlebars::new();
+      // Register some helpers
+      register_helpers(&mut handlebars);
+      // Register the root path as a template directory
+      // TODO: I wonder if there's a simpler way to do this ...
+      let absolute_template_root = config.root_path.join(&template_root.path);
+      handlebars.register_templates_directory(".hbs", absolute_template_root)?;
+      match &output.per {
+        Some(config::OutputIterator::Interface) => {
+          for interface in &interfaces {
+            write_output(
+              &output,
+              &output_path,
+              &handlebars,
+              &SerializableNonPartialInterface(interface),
+            )?;
+          }
         }
-      }
-      None => {
-        let mut data = BTreeMap::new();
-        data.insert(
-          "interfaces",
-          interfaces
-            .iter()
-            .map(|interface| SerializableNonPartialInterface(interface))
-            .collect::<Vec<SerializableNonPartialInterface>>(),
-        );
-        write_output(&output, &output_path, &handlebars, &data)?;
+        None => {
+          let mut data = BTreeMap::new();
+          data.insert(
+            "interfaces",
+            interfaces
+              .iter()
+              .map(|interface| SerializableNonPartialInterface(interface))
+              .collect::<Vec<SerializableNonPartialInterface>>(),
+          );
+          write_output(&output, &output_path, &handlebars, &data)?;
+        }
       }
     }
   }

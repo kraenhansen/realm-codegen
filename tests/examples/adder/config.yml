@@ -1,31 +1,5 @@
 fragments:
   - adder.webidl
-outputs:
-  # C++
-  - templateRoot: templates/cpp
-    template: CMakeLists.txt
-    path: cpp/CMakeLists.txt
-  - templateRoot: templates/cpp
-    template: addon
-    path: cpp/addon.cpp
-    formatter: clang-format
-  - per: interface
-    templateRoot: templates/cpp
-    template: class-header
-    path: cpp/{{ snakeCase name }}.h
-    formatter: clang-format
-  - per: interface
-    templateRoot: templates/cpp
-    template: class
-    path: cpp/{{ snakeCase name }}.cpp
-    formatter: clang-format
-  # TypeScript
-  - templateRoot: templates/ts
-    template: index
-    path: ts/index.ts
-    formatter: prettier --parser typescript
-  - per: interface
-    templateRoot: templates/ts
-    template: class
-    path: ts/{{ name }}.d.ts
-    formatter: prettier --parser typescript
+templates:
+  - ../../templates/napi
+  - ../../templates/ts

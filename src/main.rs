@@ -12,13 +12,7 @@ fn main() {
     println!("Realm Codegen\n");
     // Read configuration
     let config_path_string = std::env::args().nth(1).expect("expected a config path");
-    let mut config_path = PathBuf::from(config_path_string);
-    if config_path.is_dir() {
-        let config_file_path = config_path.join("config.yml");
-        if config_file_path.is_file() {
-            config_path = config_file_path;
-        }
-    }
+    let config_path = PathBuf::from(config_path_string);
     let config = codegen::config::read_config(&config_path);
     // Read output path
     let output_path_string = std::env::args().nth(2).expect("expected an output path");

@@ -1,0 +1,14 @@
+outputs:
+  - template: CMakeLists.txt
+    path: cpp/CMakeLists.txt
+  - template: addon
+    path: cpp/addon.cpp
+    formatter: clang-format
+  - template: class-header
+    per: interface
+    path: cpp/{{ snakeCase name }}.h
+    formatter: clang-format
+  - template: class
+    per: interface
+    path: cpp/{{ snakeCase name }}.cpp
+    formatter: clang-format
