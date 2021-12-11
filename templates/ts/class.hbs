@@ -1,5 +1,8 @@
-export class {{ name }} {
-  {{#each members}}
-    {{> class-member}}
-  {{/each}}
-}
+{{#with interface}}
+  export class {{ name }} {
+    {{#if constructor}}constructor({{> arguments constructor }});{{/if}}
+    {{#each operations}}
+      {{ camelCase name }}({{> arguments }}): {{> type returnType }};
+    {{/each}}
+  }
+{{/with}}

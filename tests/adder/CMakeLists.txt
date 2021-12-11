@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 
 # TODO: Update the name
-project (addon)
+project (adder-addon)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Improve developer experience by exporting compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+include_directories(${CMAKE_JS_INC})
 
 # Essential include files to build a node addon,
 # you should add this line in every CMake.js based project.
@@ -19,21 +21,6 @@ include_directories(
 add_subdirectory(src/vendor)
 add_subdirectory(src/generated/cpp)
 
-# This line will give our library file a .node extension without any "lib" prefix
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
-
 target_link_libraries(${PROJECT_NAME}
   vendor
-  ${CMAKE_JS_LIB}
 )
-
-# Include N-API wrappers
-execute_process(COMMAND node -p "require('node-addon-api').include"
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE NODE_ADDON_API_DIR
-)
-string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
-string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${NODE_ADDON_API_DIR})
-
-add_definitions(-DNAPI_VERSION=3)

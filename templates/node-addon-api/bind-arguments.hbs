@@ -1,0 +1,8 @@
+{{#each arguments}}
+  {{#if type.double}}
+    Napi::Number arg_{{name}} = info[{{@index}}].As<Napi::Number>();
+  {{/if}}
+  {{#if type.string}}
+    Napi::String arg_{{name}} = info[{{@index}}].As<Napi::String>();
+  {{/if}}
+{{/each}}

@@ -4,5 +4,5 @@ outputs:
     formatter: prettier --parser typescript
   - template: class
     per: interface
-    path: ts/{{ name }}.d.ts
+    path: ts/{{ interface.name }}.d.ts
     formatter: prettier --parser typescript

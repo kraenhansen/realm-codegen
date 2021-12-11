@@ -1,0 +1,42 @@
+{{#with interface}}
+    #include "{{snakeCase name}}.h"
+
+    namespace generated {
+
+    Napi::Object {{name}}::Init(Napi::Env env, Napi::Object exports) {
+        Napi::Function func = DefineClass(env, "{{name}}", {
+            {{#each operations}}
+                InstanceMethod("{{camelCase name}}", &{{../name}}::{{pascalCase name}}),
+            {{/each}}
+        });
+
+        Napi::FunctionReference *constructor = new Napi::FunctionReference();
+        *constructor = Napi::Persistent(func);
+        // env.SetInstanceData(constructor);
+        exports.Set("{{name}}", func);
+
+        return exports;
+    }
+
+    {{name}}::{{name}}(const Napi::CallbackInfo &info) : wrapped { {{> constructor-arguments}} }, Napi::ObjectWrap<{{name}}>(info) {
+        Napi::Env env = info.Env();
+    }
+
+    {{#each operations}}
+        Napi::Value {{../name}}::{{pascalCase name}}(const Napi::CallbackInfo &info) {
+            Napi::Env env = info.Env();
+            {{> bind-arguments}}
+            auto result = this->wrapped.{{name}}({{> argument-names}});
+            {{#with returnType}}
+                {{#if double}}
+                    return Napi::Number::New(env, result);
+                {{/if}}
+                {{#if string}}
+                    return Napi::String::New(env, result);
+                {{/if}}
+            {{/with}}
+        }
+    {{/each}}
+
+    }
+{{/with}}

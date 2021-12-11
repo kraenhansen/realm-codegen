@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # TODO: Update the name
-project (addon)
+project (advanced-addon)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

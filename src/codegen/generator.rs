@@ -1,5 +1,5 @@
 use handlebars::*;
-use serde::Serialize;
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs;
@@ -64,6 +64,25 @@ where
   Ok(())
 }
 
+struct TemplateContext<'a> {
+  project_name: String,
+  interfaces: Vec<SerializableNonPartialInterface<'a>>,
+  interface: Option<SerializableNonPartialInterface<'a>>,
+}
+
+impl Serialize for TemplateContext<'_> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut s = serializer.serialize_struct("TemplateContext", 1)?;
+    s.serialize_field("projectName", &self.project_name)?;
+    s.serialize_field("interfaces", &self.interfaces)?;
+    s.serialize_field("interface", &self.interface)?;
+    s.end()
+  }
+}
+
 pub fn generate(
   config: config::EnrichedConfig,
   output_path: &PathBuf,
@@ -86,6 +105,14 @@ pub fn generate(
   let mut visitor = PrettyPrintVisitor::new();
   visitor.visit(&definitions);
   print!("{}", visitor.get_output());
+  let mut context = TemplateContext {
+    project_name: config.project_name,
+    interfaces: interfaces
+      .iter()
+      .map(|interface| SerializableNonPartialInterface(interface))
+      .collect::<Vec<SerializableNonPartialInterface>>(),
+    interface: None,
+  };
   for template_root in config.template_roots {
     for output in template_root.outputs {
       // Emit output files
@@ -99,24 +126,12 @@ pub fn generate(
       match &output.per {
         Some(config::OutputIterator::Interface) => {
           for interface in &interfaces {
-            write_output(
-              &output,
-              &output_path,
-              &handlebars,
-              &SerializableNonPartialInterface(interface),
-            )?;
+            context.interface = Some(SerializableNonPartialInterface(interface));
+            write_output(&output, &output_path, &handlebars, &context)?;
           }
         }
         None => {
-          let mut data = BTreeMap::new();
-          data.insert(
-            "interfaces",
-            interfaces
-              .iter()
-              .map(|interface| SerializableNonPartialInterface(interface))
-              .collect::<Vec<SerializableNonPartialInterface>>(),
-          );
-          write_output(&output, &output_path, &handlebars, &data)?;
+          write_output(&output, &output_path, &handlebars, &context)?;
         }
       }
     }

@@ -1,14 +1,14 @@
 outputs:
   - template: CMakeLists.txt
     path: cpp/CMakeLists.txt
-  - template: addon
+  - template: addon.cpp
     path: cpp/addon.cpp
     formatter: clang-format
-  - template: class-header
+  - template: class.h
     per: interface
     path: cpp/{{ snakeCase interface.name }}.h
     formatter: clang-format
-  - template: class
+  - template: class.cpp
     per: interface
     path: cpp/{{ snakeCase interface.name }}.cpp
     formatter: clang-format

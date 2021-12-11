@@ -1,5 +1,6 @@
+project: adder-addon
 fragments:
   - adder.webidl
 templates:
-  - ../../templates/napi
+  - ../../templates/node-addon-api
   - ../../templates/ts

@@ -1,0 +1,16 @@
+#include <napi.h>
+  
+{{#each interfaces}}
+#include "{{ snakeCase name }}.h"
+{{/each}}
+
+// Initialize native add-on
+Napi::Object {{pascalCase projectName}}(Napi::Env env, Napi::Object exports) {
+  {{#each interfaces}}
+    generated::{{ name }}::Init(env, exports);
+  {{/each}}
+  return exports;
+}
+
+// Register and initialize native add-on
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, {{pascalCase projectName}})

@@ -1,0 +1,3 @@
+[submodule "vendor/v8-jsi"]
+	path = vendor/v8-jsi
+	url = git@github.com:microsoft/v8-jsi.git

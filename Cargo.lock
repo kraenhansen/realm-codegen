@@ -878,8 +878,6 @@ checksum = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 [[package]]
 name = "webidl"
 version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b45a1211deab8a626737e8c889ca21133c5b15e0b4698239ff7ececada9575c"
 dependencies = [
  "lalrpop",
  "lalrpop-util",

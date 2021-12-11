@@ -1,3 +1,4 @@
 add_library(vendor STATIC
-  adder.cpp
+  constructable.cpp
+  stringer.cpp
 )

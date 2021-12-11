@@ -1,0 +1,34 @@
+napi_valuetype valuetype;
+
+{{#each arguments}}
+  // Start of argument #{{@index}}
+  status = napi_typeof(env, args[{{@index}}], &valuetype);
+  assert(status == napi_ok);
+  {{#if type.double}}
+  double arg_{{name}} {};
+  if (valuetype != napi_undefined) {
+    status = napi_get_value_double(env, args[{{@index}}], &arg_{{name}});
+    assert(status == napi_ok);
+  }
+  {{/if}}
+  {{#if type.string}}
+  // Determine the size of the string argument
+  size_t arg_{{name}}_size {};
+  if (valuetype != napi_undefined) {
+    status = napi_get_value_string_utf8(env, args[{{@index}}], nullptr, 0, &arg_{{name}}_size);
+    if(status == napi_string_expected) {
+      throw std::invalid_argument("Expected string as argument #{{@index}}");
+    } else if(status == napi_ok) {
+      throw std::invalid_argument("Unable to determine length of string argument");
+    }
+  }
+  // Initialize the string to the correct length
+  std::string arg_{{name}}(arg_{{name}}_size, 0);
+  if (valuetype != napi_undefined) {
+    // Resize the string to hold the value
+    status = napi_get_value_string_utf8(env, args[{{@index}}], arg_{{name}}.data(), arg_{{name}}_size + 1, &arg_{{name}}_size);
+    assert(status == napi_ok);
+  }
+  {{/if}}
+  
+{{/each}}

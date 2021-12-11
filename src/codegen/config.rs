@@ -46,6 +46,8 @@ pub struct EnrichedTemplateRootConfig {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
+  #[serde(rename = "project")]
+  pub project_name: String,
   #[serde(rename = "fragments")]
   pub fragment_paths: Vec<PathBuf>,
   #[serde(rename = "templates")]
@@ -54,6 +56,7 @@ pub struct Config {
 
 #[derive(Debug)]
 pub struct EnrichedConfig {
+  pub project_name: String,
   pub fragments: Vec<ast::AST>,
   pub root_path: PathBuf,
   pub template_roots: Vec<EnrichedTemplateRootConfig>,
@@ -96,6 +99,7 @@ pub fn read_config(path: &PathBuf) -> Result<EnrichedConfig, Box<dyn Error>> {
     .parent()
     .ok_or("Failed to determine root path")?;
   Ok(EnrichedConfig {
+    project_name: config.project_name,
     root_path: root_path.to_owned(),
     fragments: config
       .fragment_paths

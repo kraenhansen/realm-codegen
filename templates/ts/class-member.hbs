@@ -1,7 +1,0 @@
-{{#if operation}}
-  {{ camelCase name }}(
-    {{#each arguments}}
-      {{ camelCase name }}: {{> type type }}{{#unless @last}},{{/unless}}
-    {{/each}}
-  ): {{> type returnType }}
-{{/if}}

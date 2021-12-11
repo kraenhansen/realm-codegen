@@ -1,10 +1,19 @@
-import { Adder } from ".";
+import { expect } from "chai";
 
-const adder = new Adder();
-const result = adder.performAdd(1, 2);
-if (result == 3) {
-  console.log("Great success!");
-} else {
-  console.error(`Failed - result was ${result}`);
-  process.exit(1);
-}
+import { Constructable, Stringer } from ".";
+
+describe("Constructable", () => {
+  it("constructs", () => {
+    const constructable = new Constructable(123);
+    const result = constructable.getNumber();
+    expect(result).equals(123);
+  });
+});
+
+describe("Stringer", () => {
+  it("uppercases", () => {
+    const stringer = new Stringer();
+    const result = stringer.uppercase("hello!");
+    expect(result).equals("HELLO!");
+  });
+});

@@ -1,0 +1,7 @@
+{{#with constructor}}
+  {{#each arguments}}
+    {{#if type.double}}
+      info[{{@index}}].As<Napi::Number>()
+    {{/if}}
+  {{/each}}
+{{/with}}
