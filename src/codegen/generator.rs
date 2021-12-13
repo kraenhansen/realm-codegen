@@ -1,6 +1,5 @@
 use handlebars::*;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs;
 use std::io::Write;
@@ -29,13 +28,10 @@ fn apply_formatter(formatter: &Option<String>, source: String) -> Result<String,
           .expect("Failed to write to stdin");
       });
       let output = child.wait_with_output()?;
-      Ok(String::from_utf8_lossy(&output.stdout).into_owned())
-    } else {
-      Ok(source)
+      return Ok(String::from_utf8_lossy(&output.stdout).into_owned());
     }
-  } else {
-    Ok(source)
   }
+  Ok(source)
 }
 
 pub fn write_output<T>(
@@ -66,8 +62,10 @@ where
 
 struct TemplateContext<'a> {
   project_name: String,
-  interfaces: Vec<SerializableNonPartialInterface<'a>>,
-  interface: Option<SerializableNonPartialInterface<'a>>,
+  interfaces: &'a Vec<SerializableNonPartialInterface<'a>>,
+  interface: Option<&'a SerializableNonPartialInterface<'a>>,
+  dictionaries: &'a Vec<SerializableNonPartialDictionary<'a>>,
+  dictionary: Option<&'a SerializableNonPartialDictionary<'a>>,
 }
 
 impl Serialize for TemplateContext<'_> {
@@ -79,6 +77,8 @@ impl Serialize for TemplateContext<'_> {
     s.serialize_field("projectName", &self.project_name)?;
     s.serialize_field("interfaces", &self.interfaces)?;
     s.serialize_field("interface", &self.interface)?;
+    s.serialize_field("dictionaries", &self.dictionaries)?;
+    s.serialize_field("dictionary", &self.dictionary)?;
     s.end()
   }
 }
@@ -91,27 +91,36 @@ pub fn generate(
   if !output_path.exists() {
     fs::create_dir_all(&output_path)?;
   }
-  // Gather all interfaces
+  // Gather all definitions
   let definitions = config.fragments.concat();
   // Gather all interfaces
   let interfaces = definitions
     .iter()
     .filter_map(|definition| match &definition {
-      Definition::Interface(Interface::NonPartial(i)) => Some(i),
+      Definition::Interface(Interface::NonPartial(i)) => Some(SerializableNonPartialInterface(i)),
       _ => None,
     })
-    .collect::<Vec<&NonPartialInterface>>();
+    .collect::<Vec<SerializableNonPartialInterface>>();
+  // Gather all dictionaries
+  let dictionaries = definitions
+    .iter()
+    .filter_map(|definition| match &definition {
+      Definition::Dictionary(Dictionary::NonPartial(d)) => {
+        Some(SerializableNonPartialDictionary(d))
+      }
+      _ => None,
+    })
+    .collect::<Vec<SerializableNonPartialDictionary>>();
   // Print the definitions
   let mut visitor = PrettyPrintVisitor::new();
   visitor.visit(&definitions);
   print!("{}", visitor.get_output());
   let mut context = TemplateContext {
     project_name: config.project_name,
-    interfaces: interfaces
-      .iter()
-      .map(|interface| SerializableNonPartialInterface(interface))
-      .collect::<Vec<SerializableNonPartialInterface>>(),
+    interfaces: &interfaces,
+    dictionaries: &dictionaries,
     interface: None,
+    dictionary: None,
   };
   for template_root in config.template_roots {
     for output in template_root.outputs {
@@ -126,7 +135,13 @@ pub fn generate(
       match &output.per {
         Some(config::OutputIterator::Interface) => {
           for interface in &interfaces {
-            context.interface = Some(SerializableNonPartialInterface(interface));
+            context.interface = Some(interface);
+            write_output(&output, &output_path, &handlebars, &context)?;
+          }
+        }
+        Some(config::OutputIterator::Dictionary) => {
+          for dictionary in &dictionaries {
+            context.dictionary = Some(dictionary);
             write_output(&output, &output_path, &handlebars, &context)?;
           }
         }

@@ -20,6 +20,7 @@ fn read_fragment(path: &PathBuf) -> Result<webidl::ast::AST, Box<dyn Error>> {
 #[serde(rename_all = "camelCase")]
 pub enum OutputIterator {
   Interface,
+  Dictionary,
 }
 
 #[derive(Deserialize, Debug)]

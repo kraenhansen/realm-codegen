@@ -6,3 +6,7 @@ outputs:
     per: interface
     path: ts/{{ interface.name }}.d.ts
     formatter: prettier --parser typescript
+  - template: dictionary
+    per: dictionary
+    path: ts/{{ dictionary.name }}.d.ts
+    formatter: prettier --parser typescript

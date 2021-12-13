@@ -3,5 +3,11 @@
     {{#if type.double}}
       info[{{@index}}].As<Napi::Number>()
     {{/if}}
+    {{#if type.string}}
+      info[{{@index}}].As<Napi::String>()
+    {{/if}}
+    {{#if type.identifier}}
+      value_to_{{ snakeCase type.name }}(info[{{@index}}])
+    {{/if}}
   {{/each}}
 {{/with}}

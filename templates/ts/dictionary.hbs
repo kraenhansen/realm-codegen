@@ -1,0 +1,7 @@
+{{#with dictionary}}
+  export type {{name}} = {
+    {{#each members}}
+      {{camelCase name}}: {{>type type}},
+    {{/each}}
+  };
+{{/with}}

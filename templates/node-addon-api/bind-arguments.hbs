@@ -5,4 +5,7 @@
   {{#if type.string}}
     Napi::String arg_{{name}} = info[{{@index}}].As<Napi::String>();
   {{/if}}
+  {{#if type.identifier}}
+    ::{{ type.name }} arg_{{name}} = value_to_{{ snakeCase type.name }}(info[{{@index}}]);
+  {{/if}}
 {{/each}}

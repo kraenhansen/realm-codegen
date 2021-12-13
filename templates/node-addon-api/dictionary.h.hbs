@@ -1,0 +1,34 @@
+#pragma once
+
+#include <napi.h>
+
+{{#with dictionary}}
+  #include <vendor/{{ snakeCase name }}.h>
+
+  namespace generated {
+    inline Napi::Value value_from_{{ snakeCase name }}(Napi::Env &env, ::{{ name }} arg) {
+      Napi::Object result = Napi::Object::New(env);
+      {{#each members}}
+        {{#if type.identifier}}
+          result.Set("{{camelCase name}}", value_from_{{ snakeCase type.name }}(env, arg.{{name}}));
+        {{else}}
+          result.Set("{{camelCase name}}", arg.{{name}});
+        {{/if}}
+      {{/each}}
+      return result;
+    }
+
+    inline ::{{ name }} value_to_{{ snakeCase name }}(Napi::Value arg) {
+      auto object = arg.As<Napi::Object>();
+      return ::ObjectifierValues{
+        {{#each members}}
+          .{{name}} =
+          {{#if type.double}}object.Get("{{camelCase name}}").As<Napi::Number>(){{/if}}
+          {{#if type.string}}object.Get("{{camelCase name}}").As<Napi::String>(){{/if}}
+          {{#if type.identifier}}std::move(value_to_{{ snakeCase type.name }}(object.Get("{{camelCase name}}"))){{/if}}
+          ,
+        {{/each}}
+      };
+    }
+  }
+{{/with}}

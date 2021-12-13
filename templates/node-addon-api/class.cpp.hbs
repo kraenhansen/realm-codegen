@@ -1,3 +1,15 @@
+{{#each dictionaries as | dictionary |}}
+  {{#if (uses ../interface dictionary)}}
+    #include <vendor/{{ snakeCase name }}.h>
+  {{/if}}
+{{/each}}
+
+{{#each dictionaries as | dictionary |}}
+  {{#if (uses ../interface dictionary)}}
+    #include "{{ snakeCase name }}.h"
+  {{/if}}
+{{/each}}
+
 {{#with interface}}
     #include "{{snakeCase name}}.h"
 
@@ -33,6 +45,9 @@
                 {{/if}}
                 {{#if string}}
                     return Napi::String::New(env, result);
+                {{/if}}
+                {{#if identifier}}
+                    return value_from_{{ snakeCase name }}(env, result);
                 {{/if}}
             {{/with}}
         }

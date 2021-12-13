@@ -1,39 +1,17 @@
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use webidl::ast::*;
 
-pub struct SerializableNonPartialInterface<'a>(pub &'a NonPartialInterface);
-pub struct SerializableInterfaceMember<'a>(pub &'a InterfaceMember);
 pub struct SerializableConstructor<'a>(pub &'a Constructor);
 pub struct SerializableOperation<'a>(pub &'a Operation);
 pub struct SerializableArgument<'a>(pub &'a Argument);
 pub struct SerializableTypeKind<'a>(pub &'a TypeKind);
 
-// TODO: Return a custom "UnsupportedError" instead of panicing
+pub struct SerializableNonPartialInterface<'a>(pub &'a NonPartialInterface);
 
-impl Serialize for SerializableNonPartialInterface<'_> {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    let mut s = serializer.serialize_struct("NonPartialInterface", 2)?;
-    s.serialize_field("name", &self.0.name)?;
-    let members = &self.0.members;
-    let operations = members
-      .iter()
-      .filter_map(|m| match m {
-        InterfaceMember::Operation(o) => Some(SerializableOperation(o)),
-        _ => None,
-      })
-      .collect::<Vec<SerializableOperation>>();
-    s.serialize_field("operations", &operations)?;
-    let constructor = members.iter().find_map(|m| match m {
-      InterfaceMember::Constructor(c) => Some(SerializableConstructor(c)),
-      _ => None,
-    });
-    s.serialize_field("constructor", &constructor)?;
-    s.end()
-  }
-}
+pub struct SerializableNonPartialDictionary<'a>(pub &'a NonPartialDictionary);
+pub struct SerializableDictionaryMember<'a>(pub &'a DictionaryMember);
+
+// TODO: Return a custom "UnsupportedError" instead of panicing
 
 impl Serialize for SerializableConstructor<'_> {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -128,6 +106,62 @@ impl Serialize for SerializableTypeKind<'_> {
       }
       _ => panic!("this part of webidl is not yet supported: {:?}", self.0),
     };
+    s.end()
+  }
+}
+
+impl Serialize for SerializableNonPartialInterface<'_> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut s = serializer.serialize_struct("NonPartialInterface", 2)?;
+    s.serialize_field("name", &self.0.name)?;
+    let members = &self.0.members;
+    let operations = members
+      .iter()
+      .filter_map(|m| match m {
+        InterfaceMember::Operation(o) => Some(SerializableOperation(o)),
+        _ => None,
+      })
+      .collect::<Vec<SerializableOperation>>();
+    s.serialize_field("operations", &operations)?;
+    let constructor = members.iter().find_map(|m| match m {
+      InterfaceMember::Constructor(c) => Some(SerializableConstructor(c)),
+      _ => None,
+    });
+    s.serialize_field("constructor", &constructor)?;
+    s.end()
+  }
+}
+
+impl Serialize for SerializableNonPartialDictionary<'_> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut s = serializer.serialize_struct("NonPartialDictionary", 2)?;
+    s.serialize_field("name", &self.0.name)?;
+    let members = &self
+      .0
+      .members
+      .iter()
+      .map(SerializableDictionaryMember)
+      .collect::<Vec<SerializableDictionaryMember>>();
+    s.serialize_field("members", members)?;
+    s.end()
+  }
+}
+
+impl Serialize for SerializableDictionaryMember<'_> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut s = serializer.serialize_struct("DictionaryMember", 2)?;
+    s.serialize_field("name", &self.0.name)?;
+    s.serialize_field("required", &self.0.required)?;
+    s.serialize_field("type", &SerializableTypeKind(&self.0.type_.kind))?;
     s.end()
   }
 }

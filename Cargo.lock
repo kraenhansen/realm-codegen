@@ -627,6 +627,7 @@ dependencies = [
  "convert_case",
  "handlebars",
  "serde",
+ "serde_json",
  "serde_yaml",
  "simple-error",
  "webidl",

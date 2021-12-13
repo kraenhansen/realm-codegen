@@ -1,3 +1,9 @@
+{{#each dictionaries as | dictionary |}}
+  {{#if (uses ../interface dictionary)}}
+    import { {{ dictionary.name }} } from "./{{ dictionary.name }}";
+  {{/if}}
+{{/each}}
+
 {{#with interface}}
   export class {{ name }} {
     {{#if constructor}}constructor({{> arguments constructor }});{{/if}}

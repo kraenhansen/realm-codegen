@@ -12,3 +12,7 @@ outputs:
     per: interface
     path: cpp/{{ snakeCase interface.name }}.cpp
     formatter: clang-format
+  - template: dictionary.h
+    per: dictionary
+    path: cpp/{{ snakeCase dictionary.name }}.h
+    formatter: clang-format
